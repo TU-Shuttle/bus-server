@@ -1,5 +1,11 @@
 spring:
   application:
     name: bus
+
+  profiles:
+    active: dev
+
+
+
 server:
   port: 8080
