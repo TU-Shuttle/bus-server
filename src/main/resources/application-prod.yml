@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:58816/bus
+    url: jdbc:mysql://mysql9:3306/bus?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
     username: bus
     password:
 
@@ -9,9 +9,9 @@ spring:
 
   springdoc:
     api-docs:
-      enabled: false
+      enabled: true # 원래는 false여야함
     swagger-ui:
-      enabled: false
+      enabled: true # 원래는 false여야함
 
 
 
