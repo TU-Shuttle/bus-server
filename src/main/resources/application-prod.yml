@@ -7,11 +7,11 @@ spring:
 
 
 
-  springdoc:
-    api-docs:
-      enabled: true # 원래는 false여야함
-    swagger-ui:
-      enabled: true # 원래는 false여야함
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
 
 
 

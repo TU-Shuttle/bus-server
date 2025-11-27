@@ -3,7 +3,7 @@ spring:
     name: bus
 
   profiles:
-    active: dev
+    active: local
 
 
 

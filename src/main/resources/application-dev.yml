@@ -9,15 +9,18 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:58816/bus
+    url: jdbc:mysql://mysql9:3306/bus?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
     username: bus
     password:
 
-  devtools:
-    livereload:
-      enabled: true
-    restart:
-      enabled: true
+
+
+springdoc:
+  api-docs:
+    path: /api/v3/api-docs
+  swagger-ui:
+    path: /swagger-ui
+    url: /api/v3/api-docs
 
 
 
