@@ -22,3 +22,11 @@ logging:
         type:
           descriptor:
             sql: info
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, prometheus

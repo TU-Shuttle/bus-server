@@ -31,3 +31,11 @@ logging:
         type:
           descriptor:
             sql: trace
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, prometheus
