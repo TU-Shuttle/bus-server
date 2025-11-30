@@ -16,6 +16,8 @@ springdoc:
 
 
 logging:
+  file:
+    name: /logs/prod-server.log
   level:
     org:
       hibernate:

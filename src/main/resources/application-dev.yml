@@ -25,6 +25,8 @@ springdoc:
 
 
 logging:
+  file:
+    name: /logs/dev-server.log
   level:
     org:
       hibernate:
