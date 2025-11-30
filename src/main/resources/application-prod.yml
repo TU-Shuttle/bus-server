@@ -1,4 +1,12 @@
 spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://mysql9:3306/bus?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
