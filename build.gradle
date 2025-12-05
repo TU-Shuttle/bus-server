@@ -60,6 +60,9 @@ dependencies {
 
     // DotEnv
     implementation 'io.github.cdimascio:dotenv-java:3.2.0'
+
+    // Logback
+    implementation 'net.logstash.logback:logstash-logback-encoder:9.0'
 }
 
 def generated = 'src/main/generated'
