@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.7'
+    id 'org.springframework.boot' version '4.0.0'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'com.google.cloud.tools.jib' version '3.5.1'
 }
@@ -24,7 +24,7 @@ description = 'Tech University of Korea second campus shuttle bus app project'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -83,7 +83,7 @@ tasks.named('test') {
 
 jib {
     from {
-        image = 'eclipse-temurin:21-jre-alpine'
+        image = 'eclipse-temurin:25-jre-alpine'
     }
     to {
         image = 'absolutevalues/bus-server'
