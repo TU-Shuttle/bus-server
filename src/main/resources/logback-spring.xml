@@ -48,4 +48,11 @@
         </root>
     </springProfile>
 
+    <!-- test -->
+    <springProfile name="default,test">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
 </configuration>

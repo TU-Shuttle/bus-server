@@ -40,6 +40,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
+    runtimeOnly 'com.h2database:h2'
+    testImplementation 'com.h2database:h2'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -57,7 +60,7 @@ dependencies {
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
     // Swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0'
 
     // DotEnv
     implementation 'io.github.cdimascio:dotenv-java:3.2.0'
@@ -80,6 +83,11 @@ clean {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.withType(Test).configureEach {
+    jvmArgs += ["-XX:+EnableDynamicAgentLoading"]
+    jvmArgs += ["-Xshare:off"]
 }
 
 jib {
