@@ -5,6 +5,7 @@ public record FindLatestBusLocationResponse(
         double lat,
         double lng,
         float accuracy,
+        String status,
         long updatedAt
 ) {
 }

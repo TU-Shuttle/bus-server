@@ -43,6 +43,7 @@ public class BusLocationController {
                 entity.getLat(),
                 entity.getLng(),
                 entity.getAccuracy(),
+                entity.getStatus(),
                 entity.getUpdatedAt()
         ));
     }

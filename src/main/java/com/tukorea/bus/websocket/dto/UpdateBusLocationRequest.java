@@ -4,6 +4,7 @@ public record UpdateBusLocationRequest(
         String id,
         double lat,
         double lng,
-        float accuracy
+        float accuracy,
+        String status
 ) {
 }

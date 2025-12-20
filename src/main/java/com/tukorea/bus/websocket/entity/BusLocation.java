@@ -22,5 +22,6 @@ public class BusLocation {
     private double lat;
     private double lng;
     private float accuracy;
+    private String status;
     private long updatedAt;
 }

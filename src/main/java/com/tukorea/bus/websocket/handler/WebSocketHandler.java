@@ -21,7 +21,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
         UpdateBusLocationRequest request = jsonMapper.readValue(message.getPayload(), UpdateBusLocationRequest.class);
         BusLocation busLocation = new BusLocation(request.id(), request.lat(), request.lng(),
-                request.accuracy(), System.currentTimeMillis());
+                request.accuracy(), request.status(), System.currentTimeMillis());
         locationService.updateBusLocation(request.id(), busLocation);
     }
 }
