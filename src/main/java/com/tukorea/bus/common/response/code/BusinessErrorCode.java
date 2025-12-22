@@ -21,7 +21,10 @@ public enum BusinessErrorCode implements Code {
     UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "데이터 수정을 실패했습니다.", "049"),
 
     // 500 데이터 삭제 오류
-    DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "데이터 삭제를 실패했습니다.", "079");
+    DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "데이터 삭제를 실패했습니다.", "079"),
+
+    // 500 외부 API 호출 오류
+    EXTERNAL_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "외부 API 호출에 실패했습니다.", "080");
 
     private final HttpStatus status;
     private final String message;

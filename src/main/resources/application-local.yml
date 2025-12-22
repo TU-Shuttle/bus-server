@@ -28,3 +28,9 @@ logging:
         type:
           descriptor:
             sql: trace
+
+naver:
+  map:
+    api:
+      client-id: ${NAVER_MAP_CLIENT_ID:}
+      client-secret: ${NAVER_MAP_CLIENT_SECRET:}
