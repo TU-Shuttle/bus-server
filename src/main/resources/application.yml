@@ -9,3 +9,10 @@ spring:
 
 server:
   port: 8080
+
+naver:
+  map:
+    api:
+      client-id: ${NAVER_MAP_CLIENT_ID:}
+      client-secret: ${NAVER_MAP_CLIENT_SECRET:}
+      base-url: https://maps.apigw.ntruss.com
