@@ -9,8 +9,8 @@ import com.tukorea.bus.user.dto.SignUpUserRequest;
 import com.tukorea.bus.user.entity.User;
 import com.tukorea.bus.user.repository.UserRepository;
 import com.tukorea.bus.user.service.UserService;
-import java.util.Objects;
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +20,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserToDtoConverter userToDtoConverter;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -29,7 +30,7 @@ public class UserServiceImpl implements UserService {
         }
         User user = User.builder()
                 .id(signUpUserRequest.id())
-                .password(signUpUserRequest.password())
+                .password(passwordEncoder.encode(signUpUserRequest.password()))
                 .build();
         userRepository.save(user);
     }
@@ -40,7 +41,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findUserById(signInUserRequest.id())
                 .orElseThrow(() -> new BusinessException(BusinessErrorCode.RESOURCE_NOT_FOUND));
 
-        if (!Objects.equals(signInUserRequest.password(), user.getPassword())) {
+        if (!passwordEncoder.matches(signInUserRequest.password(), user.getPassword())) {
             throw new BusinessException(BusinessErrorCode.RESOURCE_NOT_FOUND);
         }
 
