@@ -16,3 +16,12 @@ naver:
       client-id: ${NAVER_MAP_CLIENT_ID:}
       client-secret: ${NAVER_MAP_CLIENT_SECRET:}
       base-url: https://maps.apigw.ntruss.com
+
+# 관리자 API(/api/admin/**) 토큰. 비어 있으면 관리자 API는 모두 거절된다.
+admin:
+  token: ${ADMIN_TOKEN:}
+
+shuttle:
+  timetable:
+    enabled: true
+    refresh-cron: "0 0 4 * * *"

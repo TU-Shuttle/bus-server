@@ -11,6 +11,9 @@ public enum BusinessErrorCode implements Code {
     // 401 권한 부족
     SESSION_INVALID(HttpStatus.UNAUTHORIZED, "세션에 정보가 없습니다.", "682"),
 
+    // 400 잘못된 요청 파라미터
+    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.", "010"),
+
     // 404 잘못된 리소스 접근
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 정보입니다.", "173"),
 
