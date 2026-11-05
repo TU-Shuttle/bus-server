@@ -42,6 +42,7 @@ TU Shuttle(한국공대 셔틀버스) 백엔드. Java 25, Spring Boot 4.1, MySQL
 
 | 메서드 | 경로 | 설명 |
 | --- | --- | --- |
+| GET | `/api/bus/timetable` | 현재 시간표 전체(제목·적용 기간·수집 시각·모든 출발 시각). 없으면 404 |
 | GET | `/api/bus/schedule?dayType=&direction=` | 활성 시간표 조회. `dayType`: `WEEKDAY`/`SATURDAY`, `direction`: `STATION_TO_CAMPUS1` 등 |
 | POST | `/api/admin/schedule/refresh` | 시간표 즉시 수집 (관리자) |
 

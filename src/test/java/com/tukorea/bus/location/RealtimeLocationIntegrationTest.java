@@ -108,6 +108,11 @@ class RealtimeLocationIntegrationTest {
     }
 
     @Test
+    void 활성_시간표가_없으면_404() throws Exception {
+        assertThat(get("/api/bus/timetable").statusCode()).isEqualTo(404);
+    }
+
+    @Test
     void 위치가_없는_버스는_404() throws Exception {
         assertThat(get("/api/bus/never-seen/location").statusCode()).isEqualTo(404);
     }

@@ -14,4 +14,6 @@ public interface ShuttleTimetableRepository extends JpaRepository<ShuttleTimetab
     Optional<ShuttleTimetable> findFirstBySourceHashAndActiveTrue(String sourceHash);
 
     boolean existsByActiveTrue();
+
+    Optional<ShuttleTimetable> findFirstByActiveTrueOrderByFetchedAtDesc();
 }

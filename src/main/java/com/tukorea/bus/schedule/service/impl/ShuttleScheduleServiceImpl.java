@@ -5,6 +5,9 @@ import com.tukorea.bus.common.response.code.BusinessErrorCode;
 import com.tukorea.bus.common.response.exception.BusinessException;
 import com.tukorea.bus.schedule.converter.ShuttleScheduleToDtoConverter;
 import com.tukorea.bus.schedule.dto.FindShuttleScheduleResponse;
+import com.tukorea.bus.schedule.dto.FindTimetableResponse;
+import com.tukorea.bus.schedule.entity.ShuttleTimetable;
+import com.tukorea.bus.schedule.repository.ShuttleTimetableRepository;
 import com.tukorea.bus.schedule.entity.ShuttleDayType;
 import com.tukorea.bus.schedule.entity.ShuttleDirection;
 import com.tukorea.bus.schedule.repository.ShuttleScheduleRepository;
@@ -22,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ShuttleScheduleServiceImpl implements ShuttleScheduleService {
 
     private final ShuttleScheduleRepository shuttleScheduleRepository;
+    private final ShuttleTimetableRepository shuttleTimetableRepository;
     private final ShuttleScheduleToDtoConverter shuttleScheduleToDtoConverter;
 
     @Override
@@ -34,6 +38,17 @@ public class ShuttleScheduleServiceImpl implements ShuttleScheduleService {
         return ConverterUtil.convertList(
                 shuttleScheduleRepository.findActive(dayTypeFilter, directionFilter),
                 shuttleScheduleToDtoConverter);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public FindTimetableResponse findActiveTimetable() {
+        ShuttleTimetable timetable = shuttleTimetableRepository.findFirstByActiveTrueOrderByFetchedAtDesc()
+                .orElseThrow(() -> new BusinessException(BusinessErrorCode.RESOURCE_NOT_FOUND));
+        List<FindShuttleScheduleResponse> schedules = ConverterUtil.convertList(
+                shuttleScheduleRepository.findActive(null, null), shuttleScheduleToDtoConverter);
+        return new FindTimetableResponse(timetable.getTitle(), timetable.getValidFrom(), timetable.getValidTo(),
+                timetable.getFetchedAt(), schedules);
     }
 
     private <E extends Enum<E>> E parse(Class<E> type, String value) {
