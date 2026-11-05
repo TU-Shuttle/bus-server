@@ -13,6 +13,7 @@ TU Shuttle(한국공대 셔틀버스) 백엔드. Java 25, Spring Boot 4.1, MySQL
 | --- | --- |
 | `location` | 기사 앱 위치 수신(WebSocket), 최신 위치 보관, 학생 앱에 푸시(SSE)·조회(REST) |
 | `schedule` | 학교 PDF 시간표 수집·파싱·저장, 시간표 조회 |
+| `ride` | 탑승 예정(몇 명이 어느 출발편을 타고 어디서 내리는지) 등록·집계 |
 | `naver` | 네이버 Directions API 중계 |
 | `user` | 회원가입/로그인 |
 
@@ -47,6 +48,22 @@ TU Shuttle(한국공대 셔틀버스) 백엔드. Java 25, Spring Boot 4.1, MySQL
 | POST | `/api/admin/schedule/refresh` | 시간표 즉시 수집 (관리자) |
 
 `endTime` 이 있는 항목은 정시 출발이 아니라 수시운행 구간(`departTime`~`endTime`)이다.
+
+### 탑승 예정(수요 파악)
+
+학생이 "이 셔틀 탈게요"를 누르면 출발편(날짜, 방향, 출발 시각)과 하차지를 남긴다. 좌석 예약이 아니라 **예정 인원 파악**용이다.
+
+- 로그인 없이 앱이 만든 익명 기기 id(`X-Device-Id` 헤더)로 본인 것을 구분한다. 위조를 막지는 못하므로 수치는 참고용이다.
+- 출발편은 시간표 행 id 대신 (날짜, 방향, 출발 시각)으로 저장해 시간표를 다시 수집해도 유지된다.
+- 오늘~7일 뒤, 시간표에 있는 정시 출발편만 받는다. 기기당 진행 중인 예정은 최대 10건이다.
+- 하차지는 방향별로 정해져 있다(경유 노선은 본교 서문에서도 내릴 수 있다).
+
+| 메서드 | 경로 | 설명 |
+| --- | --- | --- |
+| POST | `/api/rides` | 등록(같은 출발편이면 하차지만 변경). 본문: `serviceDate`, `direction`, `departTime`, `dropOff` |
+| GET | `/api/rides/mine` | 내 예정(오늘 이후) |
+| DELETE | `/api/rides/{id}` | 취소 |
+| GET | `/api/rides/summary?date=yyyy-MM-dd` | 출발편별 예정 인원과 하차지별 인원 |
 
 ## 로컬 실행
 

@@ -11,7 +11,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -53,6 +57,18 @@ public class GlobalExceptionController {
      * @param request 웹 요청 객체. 요청 정보를 포함합니다.
      * @return ResponseEntity<ErrorResponse> 오류 응답 객체. 에러 상태, 메시지 및 필드별 오류 정보를 포함합니다.
      */
+    /** 필수 헤더·파라미터 누락, 형식이 잘못된 본문/파라미터는 400 으로 응답한다(500 이 아니라). */
+    @ExceptionHandler({
+            MissingRequestHeaderException.class,
+            MissingServletRequestParameterException.class,
+            MethodArgumentTypeMismatchException.class,
+            HttpMessageNotReadableException.class
+    })
+    private ResponseEntity<ErrorResponse> handleBadRequest(Exception ex, WebRequest request) {
+        logger.warn("잘못된 요청: {}", ex.getMessage());
+        return ResponseHandler.error(GlobalErrorCode.METHOD_ARGUMENT_NOT_VALID, request);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     private ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
