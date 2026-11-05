@@ -1,10 +1,11 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '4.0.0'
+    id 'org.springframework.boot' version '4.1.2'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'com.google.cloud.tools.jib' version '3.5.1'
 }
 
+// .env(없으면 무시) → 시스템 환경변수 순으로 조회한다.
 def envFile = file(".env")
 def envVars = [:]
 
@@ -17,6 +18,8 @@ if (envFile.exists()) {
         }
     }
 }
+
+def env = { String key -> envVars[key] ?: System.getenv(key) }
 
 group = 'com.tukorea'
 version = '0.0.1-SNAPSHOT'
@@ -62,6 +65,9 @@ dependencies {
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
+    // PDF 시간표 파싱
+    implementation 'org.apache.pdfbox:pdfbox:3.0.8'
+
     // Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0'
 
@@ -101,8 +107,8 @@ jib {
         image = 'absolutevalues/bus-server'
         tags = ['latest']
         auth {
-            username = envVars["DOCKERHUB_USERNAME"]
-            password = envVars["DOCKERHUB_PASSWORD"]
+            username = env("DOCKERHUB_USERNAME") ?: ''
+            password = env("DOCKERHUB_PASSWORD") ?: ''
         }
     }
 }

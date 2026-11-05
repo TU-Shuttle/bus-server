@@ -9,9 +9,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:58816/bus
-    username: bus
-    password:
+    url: jdbc:mysql://localhost:${DB_PORT:58816}/bus?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+    username: ${DB_USERNAME:bus}
+    password: ${DB_PASSWORD:}
 
   devtools:
     livereload:

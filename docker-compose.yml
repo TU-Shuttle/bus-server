@@ -1,0 +1,28 @@
+# 로컬 개발용 MySQL. `docker compose up -d` 후 `./gradlew bootRun`(profile: local)으로 실행한다.
+# 서비스명을 mysql9로 두어 dev/prod 설정(jdbc:mysql://mysql9:3306/bus)과 호환된다.
+services:
+  mysql9:
+    image: mysql:9
+    container_name: bus-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: bus
+      MYSQL_USER: ${DB_USERNAME:-bus}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?.env에 DB_PASSWORD를 설정하세요}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?.env에 DB_ROOT_PASSWORD를 설정하세요}
+      TZ: Asia/Seoul
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "${DB_PORT:-58816}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  mysql-data:
