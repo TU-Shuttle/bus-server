@@ -2,6 +2,7 @@ package com.tukorea.bus.location.service;
 
 import com.tukorea.bus.location.config.RealtimeProperties;
 import com.tukorea.bus.location.domain.BusLocation;
+import com.tukorea.bus.location.domain.BusStatus;
 import com.tukorea.bus.location.stream.LocationStreamHub;
 import java.time.Clock;
 import java.util.Comparator;
@@ -41,8 +42,12 @@ public class LocationService {
         this.clock = clock;
     }
 
-    /** @throws InvalidLocationException 버스 id나 좌표가 올바르지 않을 때 */
-    public BusLocation update(String id, double lat, double lng) {
+    /**
+     * @param accuracy GPS 오차(m). 모르면 null
+     * @param status   운행 상태. 모르면 null(RUNNING)
+     * @throws InvalidLocationException 버스 id, 좌표, 상태가 올바르지 않을 때
+     */
+    public BusLocation update(String id, double lat, double lng, Double accuracy, String status) {
         if (id == null || !BUS_ID.matcher(id).matches()) {
             throw new InvalidLocationException("올바르지 않은 버스 id 입니다.");
         }
@@ -50,14 +55,29 @@ public class LocationService {
                 || lat < MIN_LAT || lat > MAX_LAT || lng < MIN_LNG || lng > MAX_LNG) {
             throw new InvalidLocationException("좌표가 허용 범위를 벗어났습니다.");
         }
+        if (accuracy != null && (!Double.isFinite(accuracy) || accuracy < 0)) {
+            throw new InvalidLocationException("accuracy 가 올바르지 않습니다.");
+        }
         if (!latest.containsKey(id) && latest.size() >= MAX_BUSES) {
             throw new InvalidLocationException("등록 가능한 버스 수를 초과했습니다.");
         }
 
-        BusLocation location = new BusLocation(id, lat, lng, clock.millis());
+        BusLocation location = new BusLocation(id, lat, lng, accuracy == null ? 0 : accuracy,
+                parseStatus(status), clock.millis());
         latest.put(id, location);
         streamHub.publish(location);
         return location;
+    }
+
+    private BusStatus parseStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return BusStatus.RUNNING;
+        }
+        try {
+            return BusStatus.valueOf(status.trim().toUpperCase(java.util.Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw new InvalidLocationException("status 는 RUNNING, WAITING, STOP 중 하나여야 합니다.");
+        }
     }
 
     /** 최신 위치. 오래됐거나 없으면 비어 있다. */

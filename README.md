@@ -18,7 +18,7 @@ TU Shuttle(한국공대 셔틀버스) 백엔드. Java 25, Spring Boot 4.1, MySQL
 
 ### 실시간 위치
 
-- **업링크**: 기사 앱이 `ws://<host>/ws` 에 `X-Driver-Token` 헤더와 함께 연결해 `{"id":"bus1","lat":37.34,"lng":126.73}` 를 보낸다.
+- **업링크**: 기사 앱이 `ws://<host>/ws` 에 `X-Driver-Token` 헤더와 함께 연결해 `{"id":"bus1","lat":37.34,"lng":126.73,"accuracy":5,"status":"RUNNING"}` 를 보낸다(`accuracy`, `status`는 생략 가능, `status`는 `RUNNING`/`WAITING`/`STOP`).
   토큰이 없거나 틀리면 핸드셰이크가 401 로 거절된다. 잘못된 메시지는 `{"error":"..."}` 로 응답하고 연결은 유지한다.
 - **다운링크**: 학생 앱은 SSE 로 받는다. 끊기면 재연결하면 되고, 연결 직후 현재 위치를 한 번 받는다.
 - 위치는 메모리에만 보관한다. 마지막 수신 후 `shuttle.realtime.stale-after`(기본 60초)가 지나면 운행 정보 없음으로 본다.

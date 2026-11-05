@@ -83,6 +83,31 @@ class RealtimeLocationIntegrationTest {
     }
 
     @Test
+    void 기사_앱이_보내는_accuracy_status와_모르는_필드를_처리한다() throws Exception {
+        WebSocket driver = connect(DRIVER_TOKEN).get(5, TimeUnit.SECONDS);
+
+        driver.sendText("{\"id\":\"bus-extra\",\"lat\":37.33,\"lng\":126.73,\"accuracy\":4.5,"
+                + "\"status\":\"WAITING\",\"unknown\":1}", true).get(5, TimeUnit.SECONDS);
+        awaitStatus("/api/bus/bus-extra/location", 200);
+
+        String body = get("/api/bus/bus-extra/location").body();
+        assertThat(body).contains("\"accuracy\":4.5").contains("\"status\":\"WAITING\"");
+        driver.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+    }
+
+    @Test
+    void 알_수_없는_status는_거절된다() throws Exception {
+        BlockingQueue<String> received = new LinkedBlockingQueue<>();
+        WebSocket driver = connect(DRIVER_TOKEN, received).get(5, TimeUnit.SECONDS);
+
+        driver.sendText("{\"id\":\"bus-st\",\"lat\":37.33,\"lng\":126.73,\"status\":\"FLYING\"}", true)
+                .get(5, TimeUnit.SECONDS);
+        assertThat(received.poll(5, TimeUnit.SECONDS)).contains("status");
+        assertThat(get("/api/bus/bus-st/location").statusCode()).isEqualTo(404);
+        driver.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+    }
+
+    @Test
     void 위치가_없는_버스는_404() throws Exception {
         assertThat(get("/api/bus/never-seen/location").statusCode()).isEqualTo(404);
     }

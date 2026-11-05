@@ -30,7 +30,7 @@ public class DriverLocationHandler extends TextWebSocketHandler {
         try {
             UpdateBusLocationRequest request = jsonMapper.readValue(message.getPayload(),
                     UpdateBusLocationRequest.class);
-            locationService.update(request.id(), request.lat(), request.lng());
+            locationService.update(request.id(), request.lat(), request.lng(), request.accuracy(), request.status());
         } catch (JacksonException e) {
             reject(session, "메시지 형식이 올바르지 않습니다.");
         } catch (InvalidLocationException e) {
