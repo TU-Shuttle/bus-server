@@ -4,6 +4,7 @@ import com.tukorea.bus.location.config.RealtimeProperties;
 import com.tukorea.bus.location.domain.BusLocation;
 import com.tukorea.bus.location.domain.BusStatus;
 import com.tukorea.bus.location.stream.LocationStreamHub;
+import com.tukorea.bus.schedule.entity.ShuttleDirection;
 import java.time.Clock;
 import java.util.Comparator;
 import java.util.List;
@@ -44,10 +45,11 @@ public class LocationService {
 
     /**
      * @param accuracy GPS 오차(m). 모르면 null
-     * @param status   운행 상태. 모르면 null(RUNNING)
-     * @throws InvalidLocationException 버스 id, 좌표, 상태가 올바르지 않을 때
+     * @param status    운행 상태. 모르면 null(RUNNING)
+     * @param direction 운행 노선(ShuttleDirection 이름). 모르면 null
+     * @throws InvalidLocationException 버스 id, 좌표, 상태, 노선이 올바르지 않을 때
      */
-    public BusLocation update(String id, double lat, double lng, Double accuracy, String status) {
+    public BusLocation update(String id, double lat, double lng, Double accuracy, String status, String direction) {
         if (id == null || !BUS_ID.matcher(id).matches()) {
             throw new InvalidLocationException("올바르지 않은 버스 id 입니다.");
         }
@@ -63,7 +65,7 @@ public class LocationService {
         }
 
         BusLocation location = new BusLocation(id, lat, lng, accuracy == null ? 0 : accuracy,
-                parseStatus(status), clock.millis());
+                parseStatus(status), parseDirection(direction), clock.millis());
         latest.put(id, location);
         streamHub.publish(location);
         return location;
@@ -77,6 +79,17 @@ public class LocationService {
             return BusStatus.valueOf(status.trim().toUpperCase(java.util.Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw new InvalidLocationException("status 는 RUNNING, WAITING, STOP 중 하나여야 합니다.");
+        }
+    }
+
+    private ShuttleDirection parseDirection(String direction) {
+        if (direction == null || direction.isBlank()) {
+            return null;
+        }
+        try {
+            return ShuttleDirection.valueOf(direction.trim().toUpperCase(java.util.Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw new InvalidLocationException("알 수 없는 노선입니다.");
         }
     }
 

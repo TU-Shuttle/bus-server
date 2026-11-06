@@ -96,6 +96,23 @@ class RealtimeLocationIntegrationTest {
     }
 
     @Test
+    void 기사가_고른_노선을_함께_보관한다() throws Exception {
+        BlockingQueue<String> received = new LinkedBlockingQueue<>();
+        WebSocket driver = connect(DRIVER_TOKEN, received).get(5, TimeUnit.SECONDS);
+
+        driver.sendText("{\"id\":\"bus-dir\",\"lat\":37.33,\"lng\":126.73,"
+                + "\"direction\":\"STATION_TO_CAMPUS1\"}", true).get(5, TimeUnit.SECONDS);
+        awaitStatus("/api/bus/bus-dir/location", 200);
+        assertThat(get("/api/bus/bus-dir/location").body()).contains("\"direction\":\"STATION_TO_CAMPUS1\"");
+
+        driver.sendText("{\"id\":\"bus-dir2\",\"lat\":37.33,\"lng\":126.73,\"direction\":\"NOWHERE\"}", true)
+                .get(5, TimeUnit.SECONDS);
+        assertThat(received.poll(5, TimeUnit.SECONDS)).contains("노선");
+        assertThat(get("/api/bus/bus-dir2/location").statusCode()).isEqualTo(404);
+        driver.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+    }
+
+    @Test
     void 알_수_없는_status는_거절된다() throws Exception {
         BlockingQueue<String> received = new LinkedBlockingQueue<>();
         WebSocket driver = connect(DRIVER_TOKEN, received).get(5, TimeUnit.SECONDS);
