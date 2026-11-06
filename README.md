@@ -18,7 +18,9 @@ TU Shuttle(한국공대 셔틀버스) 백엔드. Java 25, Spring Boot 4.1, MySQL
 
 ### 실시간 위치
 
-- **업링크**: 기사 앱이 `ws://<host>/ws` 에 `X-Driver-Token` 헤더와 함께 연결해 `{"id":"bus1","lat":37.34,"lng":126.73,"accuracy":5,"status":"RUNNING","direction":"STATION_TO_CAMPUS1"}` 를 보낸다(`accuracy`, `status`, `direction`은 생략 가능, `status`는 `RUNNING`/`WAITING`/`STOP`, `direction`은 기사가 고른 노선으로 시간표의 방향 이름과 같다).
+- **업링크**: 기사 앱이 `ws://<host>/ws` 에 `X-Driver-Token` 헤더와 함께 연결해 `{"id":"bus1","lat":37.34,"lng":126.73,"accuracy":5,"status":"RUNNING","direction":"STATION_TO_CAMPUS1","deviceId":"…"}` 를 보낸다(`accuracy`, `status`, `direction`, `deviceId`는 생략 가능, `status`는 `RUNNING`/`WAITING`/`STOP`, `direction`은 기사가 고른 노선으로 시간표의 방향 이름과 같다).
+  `deviceId`는 기사 앱 설치마다 만드는 무작위 id다. 다른 `deviceId`가 운행 중(위치가 살아 있고 `STOP`이 아님)인 버스 id로 올리면 `{"error":"...","code":"BUS_NUMBER_TAKEN","id":"bus-3"}`로 거절한다. 운행을 끝내거나(`STOP`) 위치가 오래되면 번호가 풀린다.
+  기사 앱은 번호를 정할 때 `GET /api/bus/{id}/availability?deviceId=`(`X-Driver-Token` 필요)로 미리 확인한다.
   토큰이 없거나 틀리면 핸드셰이크가 401 로 거절된다. 잘못된 메시지는 `{"error":"..."}` 로 응답하고 연결은 유지한다.
 - **다운링크**: 학생 앱은 SSE 로 받는다. 끊기면 재연결하면 되고, 연결 직후 현재 위치를 한 번 받는다.
 - 위치는 메모리에만 보관한다. 마지막 수신 후 `shuttle.realtime.stale-after`(기본 60초)가 지나면 운행 정보 없음으로 본다.
@@ -28,6 +30,7 @@ TU Shuttle(한국공대 셔틀버스) 백엔드. Java 25, Spring Boot 4.1, MySQL
 | --- | --- | --- |
 | GET | `/api/bus/{id}/location` | 최신 위치. 없거나 오래됐으면 404 |
 | GET | `/api/bus/locations` | 운행 중인 모든 버스 위치 |
+| GET | `/api/bus/{id}/availability?deviceId=` | 기사 앱: 이 번호를 쓸 수 있는지(`X-Driver-Token` 필요) |
 | GET | `/api/bus/{id}/location/stream` | 한 버스 SSE 구독(`location` 이벤트) |
 | GET | `/api/bus/location/stream` | 전체 버스 SSE 구독 |
 

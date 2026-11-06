@@ -1,8 +1,5 @@
 package com.tukorea.bus.location.websocket;
 
-import com.tukorea.bus.location.config.RealtimeProperties;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -17,20 +14,19 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 @Component
 public class DriverHandshakeInterceptor implements HandshakeInterceptor {
 
-    public static final String HEADER = "X-Driver-Token";
+    public static final String HEADER = DriverTokenVerifier.HEADER;
 
-    private final byte[] expected;
+    private final DriverTokenVerifier verifier;
 
-    public DriverHandshakeInterceptor(RealtimeProperties properties) {
-        this.expected = properties.driverToken().getBytes(StandardCharsets.UTF_8);
+    public DriverHandshakeInterceptor(DriverTokenVerifier verifier) {
+        this.verifier = verifier;
     }
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler,
                                    Map<String, Object> attributes) {
         String provided = request.getHeaders().getFirst(HEADER);
-        boolean authorized = expected.length > 0 && provided != null
-                && MessageDigest.isEqual(expected, provided.getBytes(StandardCharsets.UTF_8));
+        boolean authorized = verifier.verify(provided);
         if (!authorized) {
             log.warn("기사 WebSocket 인증 실패: remote={}", request.getRemoteAddress());
             response.setStatusCode(HttpStatus.UNAUTHORIZED);

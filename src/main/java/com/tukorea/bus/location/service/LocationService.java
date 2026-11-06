@@ -31,6 +31,7 @@ public class LocationService {
     private static final double MIN_LNG = 124.0;
     private static final double MAX_LNG = 132.0;
     private static final int MAX_BUSES = 200;
+    private static final int MAX_DEVICE_ID = 64;
 
     private final Map<String, BusLocation> latest = new ConcurrentHashMap<>();
     private final RealtimeProperties properties;
@@ -47,9 +48,12 @@ public class LocationService {
      * @param accuracy GPS 오차(m). 모르면 null
      * @param status    운행 상태. 모르면 null(RUNNING)
      * @param direction 운행 노선(ShuttleDirection 이름). 모르면 null
+     * @param deviceId  기사 앱 설치 id. 모르면 null(번호 중복 검사를 하지 않는다)
      * @throws InvalidLocationException 버스 id, 좌표, 상태, 노선이 올바르지 않을 때
+     * @throws BusNumberTakenException  다른 기기가 이 번호로 운행 중일 때
      */
-    public BusLocation update(String id, double lat, double lng, Double accuracy, String status, String direction) {
+    public synchronized BusLocation update(String id, double lat, double lng, Double accuracy, String status,
+                                           String direction, String deviceId) {
         if (id == null || !BUS_ID.matcher(id).matches()) {
             throw new InvalidLocationException("올바르지 않은 버스 id 입니다.");
         }
@@ -60,12 +64,19 @@ public class LocationService {
         if (accuracy != null && (!Double.isFinite(accuracy) || accuracy < 0)) {
             throw new InvalidLocationException("accuracy 가 올바르지 않습니다.");
         }
+        String device = deviceId == null || deviceId.isBlank() ? null : deviceId.trim();
+        if (device != null && device.length() > MAX_DEVICE_ID) {
+            throw new InvalidLocationException("deviceId 가 너무 깁니다.");
+        }
+        if (!isAvailable(id, device)) {
+            throw new BusNumberTakenException(id);
+        }
         if (!latest.containsKey(id) && latest.size() >= MAX_BUSES) {
             throw new InvalidLocationException("등록 가능한 버스 수를 초과했습니다.");
         }
 
         BusLocation location = new BusLocation(id, lat, lng, accuracy == null ? 0 : accuracy,
-                parseStatus(status), parseDirection(direction), clock.millis());
+                parseStatus(status), parseDirection(direction), clock.millis(), device);
         latest.put(id, location);
         streamHub.publish(location);
         return location;
@@ -91,6 +102,18 @@ public class LocationService {
         } catch (IllegalArgumentException e) {
             throw new InvalidLocationException("알 수 없는 노선입니다.");
         }
+    }
+
+    /**
+     * 이 기기가 이 번호로 운행해도 되는지. 다른 기기가 올린 위치가 아직 살아 있고 운행 종료(STOP)가 아니면 쓸 수 없다.
+     * 운행을 끝내거나(STOP) 위치가 오래되면(stale-after) 번호가 풀린다. 기기를 모르는 쪽이 있으면 막지 않는다.
+     */
+    public boolean isAvailable(String id, String deviceId) {
+        BusLocation current = latest.get(id);
+        if (current == null || !isFresh(current) || current.status() == BusStatus.STOP) {
+            return true;
+        }
+        return current.deviceId() == null || deviceId == null || current.deviceId().equals(deviceId);
     }
 
     /** 최신 위치. 오래됐거나 없으면 비어 있다. */

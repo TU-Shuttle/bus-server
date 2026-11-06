@@ -7,12 +7,16 @@ import com.tukorea.bus.location.dto.FindLatestBusLocationResponse;
 import com.tukorea.bus.location.service.LocationService;
 import com.tukorea.bus.location.stream.LocationStreamHub;
 import io.swagger.v3.oas.annotations.Operation;
+import com.tukorea.bus.location.websocket.DriverTokenVerifier;
 import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -23,6 +27,7 @@ public class BusLocationController {
 
     private final LocationService locationService;
     private final LocationStreamHub streamHub;
+    private final DriverTokenVerifier tokenVerifier;
 
     @GetMapping("/{id}/location")
     @Operation(summary = "버스 최신 위치 조회", description = "운행 정보가 없거나 오래됐으면 404 입니다.")
@@ -30,6 +35,18 @@ public class BusLocationController {
         return locationService.findLatest(id)
                 .map(FindLatestBusLocationResponse::from)
                 .orElseThrow(() -> new BusinessException(BusinessErrorCode.RESOURCE_NOT_FOUND));
+    }
+
+    @GetMapping("/{id}/availability")
+    @Operation(summary = "기사 앱: 이 번호를 쓸 수 있는지",
+            description = "다른 기사가 이 번호로 운행 중이면 available=false. X-Driver-Token 이 필요합니다.")
+    public Map<String, Boolean> checkAvailability(@PathVariable String id, @RequestParam String deviceId,
+                                                  @RequestHeader(value = DriverTokenVerifier.HEADER, required = false)
+                                                  String token) {
+        if (!tokenVerifier.verify(token)) {
+            throw new BusinessException(BusinessErrorCode.SESSION_INVALID);
+        }
+        return Map.of("available", locationService.isAvailable(id, deviceId));
     }
 
     @GetMapping("/locations")

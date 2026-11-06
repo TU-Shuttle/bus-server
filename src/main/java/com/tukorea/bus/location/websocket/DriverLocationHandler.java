@@ -1,6 +1,7 @@
 package com.tukorea.bus.location.websocket;
 
 import com.tukorea.bus.location.dto.UpdateBusLocationRequest;
+import com.tukorea.bus.location.service.BusNumberTakenException;
 import com.tukorea.bus.location.service.InvalidLocationException;
 import com.tukorea.bus.location.service.LocationService;
 import java.io.IOException;
@@ -31,7 +32,12 @@ public class DriverLocationHandler extends TextWebSocketHandler {
             UpdateBusLocationRequest request = jsonMapper.readValue(message.getPayload(),
                     UpdateBusLocationRequest.class);
             locationService.update(request.id(), request.lat(), request.lng(), request.accuracy(), request.status(),
-                    request.direction());
+                    request.direction(), request.deviceId());
+        } catch (BusNumberTakenException e) {
+            // 기사 앱이 운행을 멈추고 번호를 다시 고르게 하도록 코드를 함께 보낸다.
+            log.info("번호 중복 거절: session={}, id={}", session.getId(), e.busId());
+            session.sendMessage(new TextMessage(jsonMapper.writeValueAsString(java.util.Map.of(
+                    "error", e.getMessage(), "code", "BUS_NUMBER_TAKEN", "id", e.busId()))));
         } catch (JacksonException e) {
             reject(session, "메시지 형식이 올바르지 않습니다.");
         } catch (InvalidLocationException e) {

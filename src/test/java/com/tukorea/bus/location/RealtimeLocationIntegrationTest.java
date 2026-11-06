@@ -113,6 +113,50 @@ class RealtimeLocationIntegrationTest {
     }
 
     @Test
+    void 다른_기기가_운행_중인_번호는_쓸_수_없다() throws Exception {
+        BlockingQueue<String> first = new LinkedBlockingQueue<>();
+        BlockingQueue<String> second = new LinkedBlockingQueue<>();
+        WebSocket a = connect(DRIVER_TOKEN, first).get(5, TimeUnit.SECONDS);
+        WebSocket b = connect(DRIVER_TOKEN, second).get(5, TimeUnit.SECONDS);
+
+        a.sendText("{\"id\":\"bus-7\",\"lat\":37.33,\"lng\":126.73,\"deviceId\":\"device-a\"}", true)
+                .get(5, TimeUnit.SECONDS);
+        awaitStatus("/api/bus/bus-7/location", 200);
+        assertThat(availability("bus-7", "device-a")).contains("\"available\":true");
+        assertThat(availability("bus-7", "device-b")).contains("\"available\":false");
+
+        // 다른 기기가 같은 번호로 올리면 거절되고, 위치는 첫 기기 것이 그대로 남는다.
+        b.sendText("{\"id\":\"bus-7\",\"lat\":37.35,\"lng\":126.74,\"deviceId\":\"device-b\"}", true)
+                .get(5, TimeUnit.SECONDS);
+        assertThat(second.poll(5, TimeUnit.SECONDS)).contains("BUS_NUMBER_TAKEN").contains("bus-7");
+        assertThat(get("/api/bus/bus-7/location").body()).contains("\"lat\":37.33");
+
+        // 첫 기기가 운행을 끝내면 번호가 풀린다.
+        a.sendText("{\"id\":\"bus-7\",\"lat\":37.33,\"lng\":126.73,\"status\":\"STOP\",\"deviceId\":\"device-a\"}", true)
+                .get(5, TimeUnit.SECONDS);
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+        while (!availability("bus-7", "device-b").contains("true") && System.nanoTime() < deadline) {
+            Thread.sleep(100);
+        }
+        assertThat(availability("bus-7", "device-b")).contains("\"available\":true");
+        a.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+        b.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+    }
+
+    @Test
+    void 번호_확인은_기사_토큰이_있어야_한다() throws Exception {
+        HttpResponse<String> response = client.send(
+                HttpRequest.newBuilder(uri("/api/bus/bus-7/availability?deviceId=x")).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).isEqualTo(401);
+    }
+
+    private String availability(String id, String deviceId) throws Exception {
+        return client.send(HttpRequest.newBuilder(uri("/api/bus/" + id + "/availability?deviceId=" + deviceId))
+                .header("X-Driver-Token", DRIVER_TOKEN).GET().build(), HttpResponse.BodyHandlers.ofString()).body();
+    }
+
+    @Test
     void 알_수_없는_status는_거절된다() throws Exception {
         BlockingQueue<String> received = new LinkedBlockingQueue<>();
         WebSocket driver = connect(DRIVER_TOKEN, received).get(5, TimeUnit.SECONDS);
