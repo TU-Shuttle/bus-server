@@ -13,3 +13,12 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
+
+shuttle:
+  timetable:
+    enabled: false
+  realtime:
+    driver-token: test-driver-token
+
+admin:
+  token: test-admin-token

@@ -12,11 +12,13 @@ public class ShuttleScheduleToDtoConverter implements Converter<ShuttleSchedule,
     public FindShuttleScheduleResponse convert(ShuttleSchedule source) {
         return new FindShuttleScheduleResponse(
                 source.getId(),
-                source.getDayType(),
-                source.getDirection(),
+                source.getDayType().name(),
+                source.getDirection().name(),
+                source.getDirection().getLabel(),
                 source.getDepartTime(),
-                source.getNote()
+                source.getEndTime(),
+                source.getNote(),
+                null
         );
     }
 }
-

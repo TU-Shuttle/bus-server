@@ -16,3 +16,17 @@ naver:
       client-id: ${NAVER_MAP_CLIENT_ID:}
       client-secret: ${NAVER_MAP_CLIENT_SECRET:}
       base-url: https://maps.apigw.ntruss.com
+
+# 관리자 API(/api/admin/**) 토큰. 비어 있으면 관리자 API는 모두 거절된다.
+admin:
+  token: ${ADMIN_TOKEN:}
+
+shuttle:
+  timetable:
+    enabled: true
+    refresh-cron: "0 0 4 * * *"
+  realtime:
+    # 기사 앱이 /ws 연결 시 X-Driver-Token 헤더로 보내는 토큰. 비어 있으면 모든 연결을 거절한다.
+    driver-token: ${DRIVER_TOKEN:}
+    # 마지막 위치 수신 후 이 시간이 지나면 운행 정보 없음으로 본다.
+    stale-after: 60s
