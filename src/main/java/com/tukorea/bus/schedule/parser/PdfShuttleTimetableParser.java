@@ -28,6 +28,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class PdfShuttleTimetableParser implements ShuttleTimetableParser {
 
+    private static final String OIDO = "오이도";
+
     private static final Pattern NUMBER = Pattern.compile("\\d{1,2}");
     private static final Pattern CLOCK = Pattern.compile("^(\\d{1,2}):(\\d{2}),?$");
     private static final Pattern HOUR_ONLY = Pattern.compile("^(\\d{1,2})시,?$");
@@ -175,8 +177,14 @@ public class PdfShuttleTimetableParser implements ShuttleTimetableParser {
                         time, null, "정왕역 출발, 본교 서문 건너편 정류장 경유")
                         : departure(ShuttleDayType.WEEKDAY, ShuttleDirection.CAMPUS1_TO_CAMPUS2, time, null, null));
             } else if (cx < saturdayStart) {
-                out.add(departure(ShuttleDayType.WEEKDAY, ShuttleDirection.CAMPUS2_TO_CAMPUS1, time, null,
-                        trailingNote(dataTokens, t, saturdayStart)));
+                String note = trailingNote(dataTokens, t, saturdayStart);
+                // "17:40 (오이도역 도착)"은 본교로 가지 않고 오이도역으로 바로 가는 차다(제2캠퍼스 학사 공지 기준).
+                if (note != null && note.contains(OIDO)) {
+                    out.add(departure(ShuttleDayType.WEEKDAY, ShuttleDirection.CAMPUS2_TO_OIDO_STATION, time, null,
+                            "본교를 거치지 않아요"));
+                } else {
+                    out.add(departure(ShuttleDayType.WEEKDAY, ShuttleDirection.CAMPUS2_TO_CAMPUS1, time, null, note));
+                }
             } else if (cx < saturdaySplit) {
                 out.add(departure(ShuttleDayType.SATURDAY, ShuttleDirection.STATION_TO_CAMPUS2_VIA_CAMPUS1,
                         time, null, null));

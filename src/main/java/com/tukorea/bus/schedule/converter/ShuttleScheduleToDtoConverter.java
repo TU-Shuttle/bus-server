@@ -17,7 +17,8 @@ public class ShuttleScheduleToDtoConverter implements Converter<ShuttleSchedule,
                 source.getDirection().getLabel(),
                 source.getDepartTime(),
                 source.getEndTime(),
-                source.getNote()
+                source.getNote(),
+                null
         );
     }
 }

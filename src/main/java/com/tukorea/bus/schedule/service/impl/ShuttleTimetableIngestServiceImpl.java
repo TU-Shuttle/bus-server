@@ -31,6 +31,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Service
 public class ShuttleTimetableIngestServiceImpl implements ShuttleTimetableIngestService {
 
+    /** 파서 출력이 바뀔 때마다 올린다. 2: 제2캠퍼스 17:40 오이도역행 분리. */
+    private static final String PARSER_VERSION = "2";
+
     private static final Pattern YEAR_IN_FILE_NAME = Pattern.compile("(\\d{2})년");
 
     private final ShuttleTimetableProperties properties;
@@ -118,9 +121,16 @@ public class ShuttleTimetableIngestServiceImpl implements ShuttleTimetableIngest
         return Year.now().getValue();
     }
 
+    /**
+     * 원본 파일과 파서 버전을 함께 해시한다. 파서가 같은 파일을 다르게 읽게 바뀌면(분류 수정 등)
+     * {@link #PARSER_VERSION}을 올려 같은 PDF도 다시 반영되게 한다.
+     */
     private String sha256(byte[] content) {
         try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(content));
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update(content);
+            digest.update(PARSER_VERSION.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest.digest());
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }

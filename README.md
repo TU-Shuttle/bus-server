@@ -39,12 +39,29 @@ TU Shuttle(한국공대 셔틀버스) 백엔드. Java 25, Spring Boot 4.1, MySQL
 - 원본 파일의 SHA-256 이 같으면 다시 반영하지 않는다.
 - 다운로드나 파싱이 실패하면(학교가 PDF 레이아웃을 바꾼 경우 등) DB 를 건드리지 않고 **기존 시간표를 유지**한다. 이 경우 파서를 고쳐야 한다.
 - 수동 수집: `POST /api/admin/schedule/refresh` (`X-Admin-Token` 헤더 필요)
+- 파서가 같은 PDF를 다르게 읽도록 바뀌면 `ShuttleTimetableIngestServiceImpl.PARSER_VERSION`을 올린다. 해시에 섞여 있어 다음 수집 때 다시 반영된다.
+
+#### 요일별 추가 운행 (학사 공지)
+
+조기취업학부 제2캠퍼스 셔틀처럼 학교 셔틀 페이지가 아닌 학사 공지로 따로 나오는 시간표는 `shuttle_extra_schedule`에 둔다.
+경로(방향)는 고정이고 학기마다 시각만 바뀌므로, 시각을 고친 JSON을 관리자 API로 통째로 올리면 된다.
+
+- 기본값: `src/main/resources/timetable/extra-schedule.json`(26-2학기). 테이블이 비어 있으면 기동 때 넣는다.
+- 교체: `PUT /api/admin/schedule/extra` (`X-Admin-Token` 필요, 본문은 기본값 파일과 같은 형식, `days`는 `MONDAY`…`SUNDAY`)
+- `/api/bus/timetable` 응답에 합쳐진다. 요일별 운행은 `daysOfWeek`가 채워져 있고, 같은 방향·시각이 정규 시간표에도 있으면 추가 운행 쪽이 남는다.
+- 적용 기간(`validTo`)이 지나면 응답에서 빠진다.
+
+```bash
+curl -X PUT -H "X-Admin-Token: $ADMIN_TOKEN" -H "Content-Type: application/json" \
+  -d @src/main/resources/timetable/extra-schedule.json http://localhost:8080/api/admin/schedule/extra
+```
 
 | 메서드 | 경로 | 설명 |
 | --- | --- | --- |
 | GET | `/api/bus/timetable` | 현재 시간표 전체(제목·적용 기간·수집 시각·모든 출발 시각). 없으면 404 |
 | GET | `/api/bus/schedule?dayType=&direction=` | 활성 시간표 조회. `dayType`: `WEEKDAY`/`SATURDAY`, `direction`: `STATION_TO_CAMPUS1` 등 |
 | POST | `/api/admin/schedule/refresh` | 시간표 즉시 수집 (관리자) |
+| PUT | `/api/admin/schedule/extra` | 요일별 추가 운행 교체 (관리자) |
 
 `endTime` 이 있는 항목은 정시 출발이 아니라 수시운행 구간(`departTime`~`endTime`)이다.
 

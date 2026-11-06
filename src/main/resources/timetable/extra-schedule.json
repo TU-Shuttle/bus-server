@@ -1,0 +1,13 @@
+{
+  "title": "제2캠퍼스 셔틀버스 운행시간표 (26-2학기, 평일)",
+  "source": "조기취업학부 학사 공지 PDF. 파란색(조기취업학부 수업) 시각만 넣는다. 검정색(본교 상시운행 09:00, 17:40 오이도역)은 학교 셔틀 페이지 시간표에 이미 있다.",
+  "validFrom": "2026-09-01",
+  "validTo": "2026-12-22",
+  "departures": [
+    { "direction": "STATION_TO_CAMPUS2_VIA_CAMPUS1", "departTime": "08:55", "days": ["MONDAY", "TUESDAY", "WEDNESDAY", "FRIDAY"], "note": "조기취업학부 셔틀 · 환승정류장(본교 서문 건너편)은 정왕역 출발 시각에 맞춰 기다려요" },
+    { "direction": "STATION_TO_CAMPUS2_VIA_CAMPUS1", "departTime": "09:05", "days": ["WEDNESDAY"], "note": "조기취업학부 셔틀 · 환승정류장(본교 서문 건너편)은 정왕역 출발 시각에 맞춰 기다려요" },
+    { "direction": "CAMPUS2_TO_STATION_VIA_CAMPUS1", "departTime": "16:30", "days": ["TUESDAY", "WEDNESDAY"], "note": "조기취업학부 셔틀" },
+    { "direction": "CAMPUS2_TO_STATION_VIA_CAMPUS1", "departTime": "17:30", "days": ["WEDNESDAY", "FRIDAY"], "note": "조기취업학부 셔틀" },
+    { "direction": "CAMPUS2_TO_STATION_VIA_CAMPUS1", "departTime": "18:25", "days": ["MONDAY", "WEDNESDAY"], "note": "조기취업학부 셔틀" }
+  ]
+}

@@ -74,12 +74,10 @@ class PdfShuttleTimetableParserTest {
         assertThat(times(ShuttleDayType.WEEKDAY, ShuttleDirection.STATION_TO_CAMPUS2_VIA_CAMPUS1))
                 .containsExactly("08:55", "09:00");
         assertThat(times(ShuttleDayType.WEEKDAY, ShuttleDirection.CAMPUS2_TO_CAMPUS1))
-                .containsExactly("09:40", "10:30", "11:30", "12:30", "13:30", "14:30", "15:30", "16:30", "17:40",
+                .containsExactly("09:40", "10:30", "11:30", "12:30", "13:30", "14:30", "15:30", "16:30",
                         "18:30", "19:30");
-        assertThat(parsed.departures().stream()
-                .filter(d -> d.direction() == ShuttleDirection.CAMPUS2_TO_CAMPUS1)
-                .filter(d -> d.departTime().equals(LocalTime.of(17, 40)))
-                .findFirst().orElseThrow().note()).contains("오이도역");
+        // 17:40은 오이도역으로 바로 가는 차라 따로 분류한다.
+        assertThat(times(ShuttleDayType.WEEKDAY, ShuttleDirection.CAMPUS2_TO_OIDO_STATION)).containsExactly("17:40");
     }
 
     @Test
